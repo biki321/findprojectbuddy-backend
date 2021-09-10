@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
+import { Tag } from 'src/tags/tags.entity';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  PrimaryColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 
 @Entity()
 export class User {
@@ -11,8 +19,7 @@ export class User {
   @Column()
   name: string;
 
-  @PrimaryColumn()
-  @Column()
+  @Column({ unique: true })
   githubId: number;
 
   @Column()
@@ -23,4 +30,8 @@ export class User {
 
   @Column()
   avatar: string;
+
+  @ManyToMany(() => Tag, (tag) => tag.users)
+  @JoinTable()
+  tags: Tag[];
 }

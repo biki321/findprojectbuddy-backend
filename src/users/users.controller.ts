@@ -18,6 +18,7 @@ export class UsersController {
     return user;
   }
 
+  @Get()
   async getCurrentUser(@Req() req: Request) {
     const id = req.app.locals.payload.id;
     const user = await this.usersService.findOne(id);

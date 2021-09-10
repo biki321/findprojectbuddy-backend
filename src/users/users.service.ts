@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TagsService } from 'src/tags/tags.service';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './create-user.dto';
 import { User } from './user.entity';
@@ -9,11 +10,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private readonly tagsService: TagsService,
   ) {}
-
-  //   findAll(): Promise<User[]> {
-  //     return this.usersRepository.find();
-  //   }
 
   create(user: CreateUserDto): Promise<User> {
     return this.usersRepository.save(user);
@@ -27,9 +25,15 @@ export class UsersService {
     return this.usersRepository.findOne(id);
   }
 
-  // update(): Promise<User> {}
+  async updateTags(id: number, tagsIds: number[]): Promise<User> {
+    const user = await this.usersRepository.findOne(id);
+    user.tags = await this.tagsService.getTags(tagsIds);
+    return this.usersRepository.save(user);
+  }
 
-  async remove(id: number): Promise<void> {
-    await this.usersRepository.delete(id);
+  async remove(id: number): Promise<User> {
+    const user = await this.usersRepository.findOne(id);
+    if (user) return user;
+    return this.usersRepository.remove(user);
   }
 }

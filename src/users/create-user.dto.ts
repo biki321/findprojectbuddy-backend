@@ -1,7 +1,5 @@
 import { IsEmail } from 'class-validator';
 export class CreateUserDto {
-  id: number;
-
   handle: string;
 
   name: string;
