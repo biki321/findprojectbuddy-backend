@@ -10,9 +10,18 @@ import { Tag } from './tags/tags.entity';
 import { TagsModule } from './tags/tags.module';
 import { ProjectsModule } from './projects/projects.module';
 import { UsersModule } from './users/users.module';
+import { ViewerToProject } from './viewerToProject/viewerToProject.entity';
+import { ViewerToProjectModule } from './viewerToProject/viewerToProject.module';
+import { SocketEventsModule } from './socketEvents/socketEvents.module';
+import { ConfigModule } from '@nestjs/config';
+import { UsersController } from './users/users.controller';
+import { ProjectsController } from './projects/projects.controller';
+import { ViewerToProjectController } from './viewerToProject/viewerToProject.controller';
+import { TagsController } from './tags/tags.controller';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -20,19 +29,29 @@ import { UsersModule } from './users/users.module';
       username: 'postgres',
       password: 'password',
       database: 'findprojectbuddydb',
-      entities: [User, Project, Tag],
+      entities: [User, Project, Tag, ViewerToProject],
       synchronize: true, //this should be false in production
     }),
     AuthModule,
     TagsModule,
     ProjectsModule,
     UsersModule,
+    ViewerToProjectModule,
+    SocketEventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes('a');
+    consumer
+      .apply(AuthenticationMiddleware)
+      .exclude('auth')
+      .forRoutes(
+        UsersController,
+        ProjectsController,
+        ViewerToProjectController,
+        TagsController,
+      );
   }
 }

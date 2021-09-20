@@ -6,17 +6,24 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
 } from '@nestjs/common';
-import { CreateProjectDto } from './create-project-dto';
+import { Request } from 'express';
+import { ViewerToProjectService } from 'src/viewerToProject/viewerToProject.service';
+import { CreateProjectDto } from './create-project.dto';
 import { ProjectsService } from './projects.service';
 
-@Controller('projects')
+@Controller('api/v1/projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private readonly viewerToProjectService: ViewerToProjectService,
+  ) {}
 
   @Post('create')
-  create(@Body() createProjectDto: CreateProjectDto) {
-    return this.projectsService.createProject(createProjectDto);
+  create(@Body() createProjectDto: CreateProjectDto, @Req() req: Request) {
+    const userId = req.app.locals.user.id;
+    return this.projectsService.createProject(userId, createProjectDto);
   }
 
   @Delete(':id')
@@ -42,4 +49,9 @@ export class ProjectsController {
       };
     }
   }
+
+  // @Get('createFeed/:id')
+  // getFeed(@Param('id') id: number) {
+  //   return this.projectsService.calculateFeed(id);
+  // }
 }

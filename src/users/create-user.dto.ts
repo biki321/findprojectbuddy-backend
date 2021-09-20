@@ -1,4 +1,4 @@
-import { IsEmail } from 'class-validator';
+import { IsEmail, IsOptional, IsUrl, Length } from 'class-validator';
 export class CreateUserDto {
   handle: string;
 
@@ -6,10 +6,18 @@ export class CreateUserDto {
 
   githubId: number;
 
+  @Length(0, 300)
+  @IsOptional()
+  bio: string | null;
+
+  @IsUrl()
   githubUrl: string;
 
+  @IsOptional()
   @IsEmail()
-  email: string;
+  email: string | undefined | null;
 
-  avatar: string;
+  @IsOptional()
+  @IsUrl()
+  avatar: string | undefined | null;
 }

@@ -1,33 +1,30 @@
-import { Controller, Get, Param, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Param, Req, Res } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/create-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
 import { validateOrReject } from 'class-validator';
-import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 
-@Controller('login')
+@Controller('api/v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
   ) {}
 
-  @Get(':code')
+  @Get('login/:code')
   async githubLogin(
     @Param('code') code: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<any> {
     console.log('code', code);
-    const { data } = await this.authService.exchangeCode(code).toPromise();
-    const accessToken = data.access_token;
-    console.log('accessToken', accessToken);
+    const { data } = await this.authService.exchangeCode(code);
+    console.log('data', data);
 
     //github profile info
-    const { data: gitProfile } = await this.authService
-      .gitGithubProfile(accessToken)
-      .toPromise();
+    const { data: gitProfile } = await this.authService.gitGithubProfile(
+      data.access_token,
+    );
     console.log('gitProfile', gitProfile);
 
     let user = await this.usersService.findOneByGithubId(gitProfile.id);
@@ -41,28 +38,87 @@ export class AuthController {
       userData.githubUrl = gitProfile.html_url;
       userData.email = gitProfile.email;
       userData.avatar = gitProfile.avatar_url;
-
+      userData.bio = gitProfile.bio;
+      console.log('userData', userData);
       try {
         await validateOrReject(userData);
       } catch (errors) {
-        return response.status(400).json({
+        response.status(500);
+        return {
           statusCode: 400,
           //from class-validator docs
           //sending error msg in array
-          message: errors.forEach((element) => {
-            element.constraints[Object.keys(element.constraints)[0]];
-          }),
-        });
+          // message: errors.forEach((element) => {
+          //   element.constraints[Object.keys(element.constraints)[0]];
+          // }),
+          error: 'unvalidated data',
+        };
       }
 
       user = await this.usersService.create(userData);
       console.log('user', user);
     }
-    const token = await this.jwtService.signAsync(
-      { id: user.id },
-      { expiresIn: '10d' },
+    const accessToken = await this.authService.createAccessToken(user);
+    const refreshToken = await this.authService.createRefreshToken(user);
+    response.set('Authorization', accessToken);
+    response.cookie('erwty', refreshToken, { httpOnly: true });
+    return user;
+  }
+
+  @Get('refreshToken')
+  async refreshToken(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    console.log(request.cookies);
+    const refreshToken = request.cookies['erwty'];
+    if (!refreshToken) {
+      response.set('Authorization', '').status(HttpStatus.UNAUTHORIZED);
+      return {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        error: 'you are not logged in',
+      };
+    }
+
+    let payload: any = null;
+    try {
+      payload = this.authService.verifyRefreshToken(refreshToken);
+    } catch (error) {
+      console.log(error);
+      response.set('Authorization', '').status(HttpStatus.UNAUTHORIZED);
+      return {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        error: 'you are not logged in',
+      };
+    }
+
+    //refreshToken is valid so send a new accessToken and refreshToken
+    const user = await this.usersService.findOne(payload.id);
+
+    if (!user) {
+      response.set('Authorization', '').status(HttpStatus.UNAUTHORIZED);
+      return {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        error: 'you are not logged in',
+      };
+    }
+
+    if (user.tokenVersion !== payload.tokenVersion) {
+      response.set('Authorization', '').status(HttpStatus.UNAUTHORIZED);
+      return {
+        statusCode: HttpStatus.UNAUTHORIZED,
+        error: 'you are not logged in',
+      };
+    }
+
+    response.cookie('erwty', await this.authService.createRefreshToken(user), {
+      httpOnly: true,
+    });
+    response.set(
+      'Authorization',
+      await this.authService.createAccessToken(user),
     );
-    response.set('Authorization', token);
+    // console.log('headers', response.getHeaders());
     return user;
   }
 }

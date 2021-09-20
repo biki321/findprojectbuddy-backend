@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { Tag } from './tags.entity';
 
 @Injectable()
@@ -10,8 +10,8 @@ export class TagsService {
     private readonly tagsRepository: Repository<Tag>,
   ) {}
 
-  getTags(ids?: number[]): Promise<Tag[]> {
-    return this.tagsRepository.findByIds(ids);
+  getTags(ids?: number[], options?: FindManyOptions): Promise<Tag[]> {
+    return this.tagsRepository.findByIds(ids, options);
   }
 
   getAllTags(): Promise<Tag[]> {
