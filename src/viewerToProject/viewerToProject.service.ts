@@ -63,16 +63,52 @@ export class ViewerToProjectService {
   }
 
   //project collaboration requests that a project owner got
-  collaborationRequestGot(userId: number): Promise<any> {
+  collabRequestGot(userId: number, relations?: string[]): Promise<any> {
     return this.viewerToProjectRepository.find({
       where: { projectOwnerId: userId, status: ViewerToProjectStatus.LIKED },
+      relations: relations,
+    });
+  }
+
+  //project collaboration requests that a project owner got and accepted
+  collabReqGotThenAccepted(userId: number, relations?: string[]): Promise<any> {
+    return this.viewerToProjectRepository.find({
+      where: {
+        projectOwnerId: userId,
+        status: ViewerToProjectStatus.ACCEPTED,
+      },
+      relations: relations,
+    });
+  }
+
+  //project collaboration requests that a project owner got Or accepted
+  collabReqGotOrAccepted(userId: number, relations?: string[]): Promise<any> {
+    return this.viewerToProjectRepository.find({
+      where: [
+        {
+          projectOwnerId: userId,
+          status: ViewerToProjectStatus.LIKED,
+        },
+        { projectOwnerId: userId, status: ViewerToProjectStatus.ACCEPTED },
+      ],
+      relations: relations,
     });
   }
 
   //project collaboration requests that a user sent
-  collaborationRequestSent(userId: number): Promise<any> {
+  collabRequestSent(viewerId: number): Promise<any> {
     return this.viewerToProjectRepository.find({
-      where: { viewerId: userId, status: ViewerToProjectStatus.LIKED },
+      where: { viewerId: viewerId, status: ViewerToProjectStatus.LIKED },
+    });
+  }
+
+  //this will give accepted requests of viewer
+  acceptedReqs(viewerId: number): Promise<any> {
+    return this.viewerToProjectRepository.find({
+      where: {
+        viewerId: viewerId,
+        status: ViewerToProjectStatus.ACCEPTED,
+      },
     });
   }
 

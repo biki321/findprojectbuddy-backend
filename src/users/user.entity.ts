@@ -39,7 +39,7 @@ export class User {
   @Column({ default: 0 })
   tokenVersion: number;
 
-  @ManyToMany(() => Tag, (tag) => tag.users)
+  @ManyToMany(() => Tag, (tag) => tag.users, { eager: true })
   @JoinTable()
   tags: Tag[];
 

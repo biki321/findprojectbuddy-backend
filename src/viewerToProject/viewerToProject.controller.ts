@@ -1,4 +1,4 @@
-import { Controller, Get, HttpStatus, Req, Param } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Req, Param, Patch } from '@nestjs/common';
 import { ViewerToProjectService } from './viewerToProject.service';
 import { Request } from 'express';
 
@@ -23,7 +23,13 @@ export class ViewerToProjectController {
     }
   }
 
-  @Get('liked/:projectId')
+  @Get('accepted')
+  async acceptedReqs(@Req() req: Request) {
+    const userId = req.app.locals.user.id;
+    return this.viewerToProjectService.acceptedReqs(userId);
+  }
+
+  @Get('like/:projectId')
   async viewerLiked(
     @Param('projectId') projectId: number,
     @Req() req: Request,
@@ -47,7 +53,7 @@ export class ViewerToProjectController {
       };
   }
 
-  @Get('rejected/:projectId')
+  @Get('reject/:projectId')
   async viewerRejected(
     @Param('projectId') projectId: number,
     @Req() req: Request,
@@ -71,7 +77,7 @@ export class ViewerToProjectController {
       };
   }
 
-  @Get('accepted/:projectId')
+  @Get('accept/:projectId')
   async ownerAccepted(
     @Param('projectId') projectId: number,
     @Req() req: Request,

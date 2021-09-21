@@ -5,12 +5,10 @@ import {
   HttpStatus,
   Param,
   Patch,
-  Post,
   Req,
   Res,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { TagArrayDto } from './tag-array.dto';
 import { UsersService } from './users.service';
 import { ViewerToProjectService } from 'src/viewerToProject/viewerToProject.service';
 import { UserDataToUpdateDto } from './UserDataToUpdate.dto';
@@ -94,6 +92,75 @@ export class UsersController {
     return result;
   }
 
+  @Get('matches')
+  getMatches(@Req() req: Request) {
+    const userId = req.app.locals.user.id;
+    return this.viewerToProjectService.matches(userId);
+  }
+
+  @Get('collabReqGot')
+  requestGot(@Req() req: Request) {
+    const userId = req.app.locals.user.id;
+    return this.viewerToProjectService.collabRequestGot(userId);
+  }
+
+  @Get('collabReqGotThenAccepted')
+  requestGotAndAccepted(@Req() req: Request) {
+    const userId = req.app.locals.user.id;
+    return this.viewerToProjectService.collabReqGotThenAccepted(userId);
+  }
+
+  @Get('collabReqGotOrAccepted')
+  requestGotOrAccepted(@Req() req: Request) {
+    const userId = req.app.locals.user.id;
+    return this.viewerToProjectService.collabReqGotOrAccepted(userId);
+  }
+
+  //to accept a req
+  @Get('collabReqGot/accept/:projectId/:viewerId')
+  acceptReq(
+    @Req() req: Request,
+    @Param('projectId') projectId: number,
+    @Param('viewerId') viewerId: number,
+  ) {
+    return this.viewerToProjectService.updateStatus(
+      viewerId,
+      projectId,
+      'accepted',
+    );
+  }
+
+  //to reject a req
+  @Get('collabReqGot/reject/:projectId/:viewerId')
+  rejectReq(
+    @Req() req: Request,
+    @Param('projectId') projectId: number,
+    @Param('viewerId') viewerId: number,
+  ) {
+    return this.viewerToProjectService.updateStatus(
+      viewerId,
+      projectId,
+      'rejected',
+    );
+  }
+
+  @Get('collabReqSent')
+  requestSent(@Req() req: Request) {
+    const userId = req.app.locals.user.id;
+    return this.viewerToProjectService.collabRequestSent(userId);
+  }
+
+  // @Post('tags')
+  // updateTags(@Body() body: TagArrayDto, @Req() req: Request) {
+  //   const userId = req.app.locals.user.id;
+  //   return this.usersService.updateTags(userId, body.tags);
+  // }
+
+  @Patch('update')
+  updateUser(@Body() body: UserDataToUpdateDto, @Req() req: Request) {
+    const userId = req.app.locals.user.id;
+    return this.usersService.updateUserData(userId, body);
+  }
   @Get(':id')
   async getUserById(
     @Param('id') id: number,
@@ -108,36 +175,6 @@ export class UsersController {
       };
     }
     return user;
-  }
-
-  @Get('matches')
-  getMatches(@Req() req: Request) {
-    const userId = req.app.locals.user.id;
-    return this.viewerToProjectService.matches(userId);
-  }
-
-  @Get('collaborationRequest/got')
-  requestGot(@Req() req: Request) {
-    const userId = req.app.locals.user.id;
-    return this.viewerToProjectService.collaborationRequestGot(userId);
-  }
-
-  @Get('collaborationRequest/sent')
-  requestSent(@Req() req: Request) {
-    const userId = req.app.locals.user.id;
-    return this.viewerToProjectService.collaborationRequestSent(userId);
-  }
-
-  // @Post('tags')
-  // updateTags(@Body() body: TagArrayDto, @Req() req: Request) {
-  //   const userId = req.app.locals.user.id;
-  //   return this.usersService.updateTags(userId, body.tags);
-  // }
-
-  @Patch('update')
-  updateUser(@Body() body: UserDataToUpdateDto, @Req() req: Request) {
-    const userId = req.app.locals.user.id;
-    return this.usersService.updateUserData(userId, body);
   }
 
   //   @Put()
