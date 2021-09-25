@@ -1,6 +1,6 @@
-import { Controller, Get, HttpStatus, Req, Param, Patch } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Req, Param, Res } from '@nestjs/common';
 import { ViewerToProjectService } from './viewerToProject.service';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 @Controller('api/v1/feed')
 export class ViewerToProjectController {
@@ -9,18 +9,22 @@ export class ViewerToProjectController {
   ) {}
 
   @Get()
-  async getFeed(@Req() req: Request) {
+  async getFeed(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const userId = req.app.locals.user.id;
     // const userId = 7;
     const feed = await this.viewerToProjectService.feed(userId);
-    if (feed.length !== 0) {
-      return feed.map((element) => element.project);
-    } else {
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        error: 'no feed available',
-      };
-    }
+    // return feed.map((element) => element.project);
+    return feed;
+    // } else {
+    //   res.status(HttpStatus.NOT_FOUND);
+    //   return {
+    //     statusCode: HttpStatus.NOT_FOUND,
+    //     error: 'no feed available',
+    //   };
+    // }
   }
 
   @Get('accepted')
@@ -33,72 +37,53 @@ export class ViewerToProjectController {
   async viewerLiked(
     @Param('projectId') projectId: number,
     @Req() req: Request,
+    @Res({ passthrough: true }) response: Response,
   ) {
     const userId = req.app.locals.user.id;
     // const userId = 7;
-    const res = await this.viewerToProjectService.updateStatus(
+    const res = await this.viewerToProjectService.updateStatusAsViewer(
       userId,
       projectId,
       'liked',
     );
-    if (!res)
+    if (res)
       return {
         statusCode: HttpStatus.OK,
         message: 'updated',
       };
-    else
+    else {
+      response.status(HttpStatus.NOT_FOUND);
       return {
         statusCode: HttpStatus.NOT_FOUND,
         error: 'entity not found',
       };
+    }
   }
 
   @Get('reject/:projectId')
   async viewerRejected(
     @Param('projectId') projectId: number,
     @Req() req: Request,
+    @Res({ passthrough: true }) response: Response,
   ) {
     const userId = req.app.locals.user.id;
     // const userId = 7;
-    const res = await this.viewerToProjectService.updateStatus(
+    const res = await this.viewerToProjectService.updateStatusAsViewer(
       userId,
       projectId,
       'rejected',
     );
-    if (!res)
+    if (res)
       return {
         statusCode: HttpStatus.OK,
         message: 'updated',
       };
-    else
+    else {
+      response.status(HttpStatus.NOT_FOUND);
       return {
         statusCode: HttpStatus.NOT_FOUND,
         error: 'entity not found',
       };
-  }
-
-  @Get('accept/:projectId')
-  async ownerAccepted(
-    @Param('projectId') projectId: number,
-    @Req() req: Request,
-  ) {
-    const userId = req.app.locals.user.id;
-    // const userId = 7;
-
-    const res = await this.viewerToProjectService.updateStatus(
-      userId,
-      projectId,
-      'accepted',
-    );
-    if (!res)
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'updated',
-      };
-    else
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        error: 'entity not found',
-      };
+    }
   }
 }

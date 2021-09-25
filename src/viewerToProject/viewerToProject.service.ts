@@ -43,8 +43,9 @@ export class ViewerToProjectService {
     //we need to look into the query later , may be it is possible to to make
     //it more optimized
     return this.viewerToProjectRepository.find({
-      where: { viewerId: viewerId },
-      relations: ['project'],
+      where: { viewerId: viewerId, status: ViewerToProjectStatus.NOTHING },
+      relations: ['project', 'projectOwner'],
+      order: { id: 'DESC' },
     });
   }
 
@@ -95,6 +96,29 @@ export class ViewerToProjectService {
     });
   }
 
+  //project collaboration requests that a project owner got Or accepted
+  collabReqGotOrAcceptedForProject(
+    userId: number,
+    projectId: number,
+    relations?: string[],
+  ): Promise<any> {
+    return this.viewerToProjectRepository.find({
+      where: [
+        {
+          projectOwnerId: userId,
+          projectId: projectId,
+          status: ViewerToProjectStatus.LIKED,
+        },
+        {
+          projectOwnerId: userId,
+          projectId: projectId,
+          status: ViewerToProjectStatus.ACCEPTED,
+        },
+      ],
+      relations: relations,
+    });
+  }
+
   //project collaboration requests that a user sent
   collabRequestSent(viewerId: number): Promise<any> {
     return this.viewerToProjectRepository.find({
@@ -112,7 +136,11 @@ export class ViewerToProjectService {
     });
   }
 
-  async updateStatus(viewerId: number, projectId: number, status: string) {
+  async updateStatusAsViewer(
+    viewerId: number,
+    projectId: number,
+    status: string,
+  ) {
     const viewerToProject = await this.get(viewerId, projectId);
     if (!viewerToProject) {
       return undefined;
@@ -120,6 +148,35 @@ export class ViewerToProjectService {
     if (status === ViewerToProjectStatus.LIKED) {
       viewerToProject.status = ViewerToProjectStatus.LIKED;
     } else if (status === ViewerToProjectStatus.REJECTED) {
+      viewerToProject.status = ViewerToProjectStatus.REJECTED;
+    } else if (status === ViewerToProjectStatus.NOTHING) {
+      viewerToProject.status = ViewerToProjectStatus.NOTHING;
+    } else if (status === ViewerToProjectStatus.ACCEPTED) {
+      viewerToProject.status = ViewerToProjectStatus.ACCEPTED;
+    }
+    return this.viewerToProjectRepository.update(
+      { viewerId: viewerId, projectId: projectId },
+      viewerToProject,
+    );
+  }
+
+  async updateStatusAsOwner(
+    viewerId: number,
+    projectId: number,
+    ownerId: number,
+    status: string,
+  ) {
+    const viewerToProject = await this.viewerToProjectRepository.findOne({
+      where: {
+        viewerId: viewerId,
+        projectId: projectId,
+        projectOwnerId: ownerId,
+      },
+    });
+    if (!viewerToProject) {
+      return undefined;
+    }
+    if (status === ViewerToProjectStatus.REJECTED) {
       viewerToProject.status = ViewerToProjectStatus.REJECTED;
     } else if (status === ViewerToProjectStatus.NOTHING) {
       viewerToProject.status = ViewerToProjectStatus.NOTHING;

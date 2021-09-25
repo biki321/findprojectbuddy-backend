@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Post,
   Req,
   Res,
 } from '@nestjs/common';
@@ -12,12 +13,15 @@ import { Request, Response } from 'express';
 import { UsersService } from './users.service';
 import { ViewerToProjectService } from 'src/viewerToProject/viewerToProject.service';
 import { UserDataToUpdateDto } from './UserDataToUpdate.dto';
+import { IdsDto } from './ids.dto';
+import { ChatService } from 'src/chat/chat.service';
 
 @Controller('api/v1/user')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly viewerToProjectService: ViewerToProjectService,
+    private readonly chatSerivce: ChatService,
   ) {}
 
   @Get()
@@ -45,13 +49,13 @@ export class UsersController {
   ) {
     const userId = req.app.locals.user.id;
     const result = await this.usersService.findOne(userId, ['tags']);
-    if (!result) {
-      res.status(HttpStatus.NOT_FOUND);
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Not found',
-      };
-    }
+    // if (!result) {
+    //   res.status(HttpStatus.NOT_FOUND);
+    //   return {
+    //     statusCode: HttpStatus.NOT_FOUND,
+    //     message: 'Not found',
+    //   };
+    // }
     return result.tags;
   }
 
@@ -62,13 +66,13 @@ export class UsersController {
   ) {
     const userId = req.app.locals.user.id;
     const result = await this.usersService.findOne(userId, ['projects']);
-    if (!result) {
-      res.status(HttpStatus.NOT_FOUND);
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Not found',
-      };
-    }
+    // if (!result) {
+    //   res.status(HttpStatus.NOT_FOUND);
+    //   return {
+    //     statusCode: HttpStatus.NOT_FOUND,
+    //     message: 'Not found',
+    //   };
+    // }
     return result.projects;
   }
 
@@ -118,16 +122,25 @@ export class UsersController {
 
   //to accept a req
   @Get('collabReqGot/accept/:projectId/:viewerId')
-  acceptReq(
+  async acceptReq(
     @Req() req: Request,
     @Param('projectId') projectId: number,
     @Param('viewerId') viewerId: number,
   ) {
-    return this.viewerToProjectService.updateStatus(
+    const ownerId = req.app.locals.user.id;
+    const updateRes = await this.viewerToProjectService.updateStatusAsOwner(
       viewerId,
       projectId,
+      ownerId,
       'accepted',
     );
+
+    //also insert into FriendShip table
+    if (!(await this.chatSerivce.searchFriendShip(ownerId, viewerId))) {
+      await this.chatSerivce.createFriendShip(ownerId, viewerId);
+    }
+
+    return updateRes;
   }
 
   //to reject a req
@@ -137,9 +150,11 @@ export class UsersController {
     @Param('projectId') projectId: number,
     @Param('viewerId') viewerId: number,
   ) {
-    return this.viewerToProjectService.updateStatus(
+    const ownerId = req.app.locals.user.id;
+    return this.viewerToProjectService.updateStatusAsOwner(
       viewerId,
       projectId,
+      ownerId,
       'rejected',
     );
   }
@@ -161,6 +176,7 @@ export class UsersController {
     const userId = req.app.locals.user.id;
     return this.usersService.updateUserData(userId, body);
   }
+
   @Get(':id')
   async getUserById(
     @Param('id') id: number,
@@ -175,6 +191,14 @@ export class UsersController {
       };
     }
     return user;
+  }
+
+  @Post('getUsers')
+  async getUsersByIds(
+    @Body() body: IdsDto,
+    // @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.usersService.findMany(body.ids);
   }
 
   //   @Put()

@@ -1,4 +1,5 @@
 export class MessageDto {
-  message: string;
-  to: number;
+  text: string;
+  receiverId: number;
+  senderId: number;
 }

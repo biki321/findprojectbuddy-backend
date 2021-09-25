@@ -96,4 +96,9 @@ export class ProjectsService {
   getProject(id: number) {
     return this.projectRepository.findOne(id);
   }
+
+  findMany(ids: number[], relations?: string[]): Promise<Project[]> {
+    if (!relations) return this.projectRepository.findByIds(ids);
+    else return this.projectRepository.findByIds(ids, { relations: relations });
+  }
 }

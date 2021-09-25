@@ -28,14 +28,14 @@ export class AuthenticationMiddleware implements NestMiddleware {
       });
     }
 
-    console.log('authorization', authorization);
+    console.log('\nauthorizationa t middleware', authorization);
 
     try {
       const accessToken = authorization.split(' ')[1];
       const payload = this.jwtService.verify(accessToken, {
         secret: this.configService.get('ACCESS_TOKEN'),
       });
-      console.log('token payload', payload);
+      console.log('\ntoken payload at middleware', payload);
       req.app.locals.user = payload;
       next();
     } catch {

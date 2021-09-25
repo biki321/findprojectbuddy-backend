@@ -18,6 +18,10 @@ import { UsersController } from './users/users.controller';
 import { ProjectsController } from './projects/projects.controller';
 import { ViewerToProjectController } from './viewerToProject/viewerToProject.controller';
 import { TagsController } from './tags/tags.controller';
+import { Message } from './chat/message.enity';
+import { FriendShip } from './chat/friendship.entity';
+import { ChatModule } from './chat/chat.module';
+import { ChatController } from './chat/chat.controller';
 
 @Module({
   imports: [
@@ -29,7 +33,7 @@ import { TagsController } from './tags/tags.controller';
       username: 'postgres',
       password: 'password',
       database: 'findprojectbuddydb',
-      entities: [User, Project, Tag, ViewerToProject],
+      entities: [User, Project, Tag, ViewerToProject, Message, FriendShip],
       synchronize: true, //this should be false in production
     }),
     AuthModule,
@@ -38,6 +42,7 @@ import { TagsController } from './tags/tags.controller';
     UsersModule,
     ViewerToProjectModule,
     SocketEventsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -52,6 +57,7 @@ export class AppModule implements NestModule {
         ProjectsController,
         ViewerToProjectController,
         TagsController,
+        ChatController,
       );
   }
 }

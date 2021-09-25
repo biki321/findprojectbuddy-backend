@@ -1,10 +1,20 @@
 import { Project } from 'src/projects/projects.entity';
 import { User } from 'src/users/user.entity';
-import { Entity, ManyToOne, JoinColumn, PrimaryColumn, Column } from 'typeorm';
+import {
+  Entity,
+  ManyToOne,
+  JoinColumn,
+  PrimaryColumn,
+  Column,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { ViewerToProjectStatus } from './viewerToProjectStatus.enum';
 
 @Entity()
 export class ViewerToProject {
+  @PrimaryGeneratedColumn()
+  id: number;
+
   @PrimaryColumn()
   viewerId!: number;
 

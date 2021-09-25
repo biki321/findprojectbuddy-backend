@@ -30,6 +30,11 @@ export class UsersService {
     else return this.usersRepository.findOne(id, { relations: relations });
   }
 
+  findMany(ids: number[], relations?: string[]): Promise<User[]> {
+    if (!relations) return this.usersRepository.findByIds(ids);
+    else return this.usersRepository.findByIds(ids, { relations: relations });
+  }
+
   async remove(id: number): Promise<User> {
     const user = await this.usersRepository.findOne(id);
     if (user) return user;

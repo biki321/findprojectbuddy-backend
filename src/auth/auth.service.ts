@@ -45,6 +45,7 @@ export class AuthService {
       { id: user.id },
       {
         expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRE'),
+        // expiresIn: '5s',
         // secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
       },
     );

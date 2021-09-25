@@ -2,6 +2,7 @@ import { IsEmail, IsOptional, IsUrl, Length } from 'class-validator';
 export class CreateUserDto {
   handle: string;
 
+  @IsOptional()
   name: string;
 
   githubId: number;

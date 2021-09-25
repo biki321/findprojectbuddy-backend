@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ChatModule } from 'src/chat/chat.module';
 import { TagsModule } from 'src/tags/tags.module';
 import { ViewerToProjectModule } from 'src/viewerToProject/viewerToProject.module';
 import { User } from './user.entity';
@@ -11,6 +12,7 @@ import { UsersService } from './users.service';
     TypeOrmModule.forFeature([User]),
     TagsModule,
     ViewerToProjectModule,
+    ChatModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],
