@@ -55,10 +55,12 @@ import { ReqAcceptedNotif } from './notification/reqAcceptedNotif.entity';
           ReqAcceptedNotif,
         ],
         synchronize: false, //this should be false in production
-        ssl:
-          process.env.NODE_ENV === 'production'
-            ? { rejectUnauthorized: false }
-            : false,
+        ssl: true,
+        extra: {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        },
       }),
       inject: [ConfigService],
     }),
