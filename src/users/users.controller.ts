@@ -15,6 +15,7 @@ import { ViewerToProjectService } from 'src/viewerToProject/viewerToProject.serv
 import { UserDataToUpdateDto } from './UserDataToUpdate.dto';
 import { IdsDto } from './ids.dto';
 import { ChatService } from 'src/chat/chat.service';
+import { NotificationService } from 'src/notification/notif.service';
 
 @Controller('api/v1/user')
 export class UsersController {
@@ -22,6 +23,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly viewerToProjectService: ViewerToProjectService,
     private readonly chatSerivce: ChatService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   @Get()
@@ -140,6 +142,8 @@ export class UsersController {
       await this.chatSerivce.createFriendShip(ownerId, viewerId);
     }
 
+    //also update in the notfif table "ReqAcceptedNotif"
+    this.notificationService.updateReqAccepted(viewerId);
     return updateRes;
   }
 

@@ -41,6 +41,10 @@ export class UsersService {
     return this.usersRepository.remove(user);
   }
 
+  async save(user: User) {
+    return this.usersRepository.save(user);
+  }
+
   // async updateTags(id: number, tagsIds: number[]): Promise<User> {
   //   const user = await this.usersRepository.findOne(id);
   //   tagsIds = [...new Set(tagsIds)];

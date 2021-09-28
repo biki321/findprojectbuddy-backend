@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { ConsoleLogger, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ViewerToProject } from './viewerToProject.entity';
@@ -146,6 +146,7 @@ export class ViewerToProjectService {
       return undefined;
     }
     if (status === ViewerToProjectStatus.LIKED) {
+      console.log('liked at updateStatusAsViewer');
       viewerToProject.status = ViewerToProjectStatus.LIKED;
     } else if (status === ViewerToProjectStatus.REJECTED) {
       viewerToProject.status = ViewerToProjectStatus.REJECTED;
@@ -154,10 +155,11 @@ export class ViewerToProjectService {
     } else if (status === ViewerToProjectStatus.ACCEPTED) {
       viewerToProject.status = ViewerToProjectStatus.ACCEPTED;
     }
-    return this.viewerToProjectRepository.update(
+    await this.viewerToProjectRepository.update(
       { viewerId: viewerId, projectId: projectId },
       viewerToProject,
     );
+    return viewerToProject;
   }
 
   async updateStatusAsOwner(
@@ -183,9 +185,10 @@ export class ViewerToProjectService {
     } else if (status === ViewerToProjectStatus.ACCEPTED) {
       viewerToProject.status = ViewerToProjectStatus.ACCEPTED;
     }
-    return this.viewerToProjectRepository.update(
+    await this.viewerToProjectRepository.update(
       { viewerId: viewerId, projectId: projectId },
       viewerToProject,
     );
+    return viewerToProject;
   }
 }

@@ -4,12 +4,14 @@ import { UsersService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
 import { validateOrReject } from 'class-validator';
 import { Response, Request } from 'express';
+import { NotificationService } from 'src/notification/notif.service';
 
 @Controller('api/v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   @Get('login/:code')
@@ -56,6 +58,11 @@ export class AuthController {
       }
 
       user = await this.usersService.create(userData);
+
+      //also insert into notifs tables as suer is created first time
+      this.notificationService.createReqAccepted(user.id);
+      this.notificationService.createReqGot(user.id);
+
       console.log('user', user);
     }
     const accessToken = await this.authService.createAccessToken(user);
@@ -120,5 +127,24 @@ export class AuthController {
     );
     // console.log('headers', response.getHeaders());
     return user;
+  }
+
+  @Get('logout')
+  async logout(@Req() request: Request, @Res() response: Response) {
+    const userId = request.app.locals.user.id;
+    const user = await this.usersService.findOne(userId);
+    if (!user)
+      response.status(HttpStatus.UNAUTHORIZED).json({
+        statusCode: HttpStatus.UNAUTHORIZED,
+      });
+
+    user.tokenVersion = user.tokenVersion + 1;
+    await this.usersService.save(user);
+
+    response.clearCookie('erwty');
+    response.status(HttpStatus.UNAUTHORIZED);
+    return {
+      statusCode: HttpStatus.UNAUTHORIZED,
+    };
   }
 }

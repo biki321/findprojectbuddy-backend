@@ -82,13 +82,27 @@ export class SocketEventsGateway
       console.log('payload at token verify at handle msg ', userId);
       console.log('\ndata at msg', data);
       try {
+        const frndShipExist = await this.chatService.searchFriendShip(
+          data.receiverId,
+          data.senderId,
+        );
+
+        if (!frndShipExist) {
+          socket.emit('unauthorized', {
+            error: 'you are unauthorized to send msg to this user',
+          });
+          return;
+        }
+
         const msg = await this.chatService.createMessage(
           data.text,
           data.receiverId,
           data.senderId,
         );
         socket.to(this.clientList[data.receiverId]).emit('message', { ...msg });
-      } catch (error) {}
+      } catch (error) {
+        socket.emit('server_error', { error: 'internal error' });
+      }
       // throw new WsException('unauthenticated');
       // socket.emit('message', 'hello client froms server');
     } else {

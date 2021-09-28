@@ -5,6 +5,7 @@ import { HttpModule } from '@nestjs/axios';
 import { UsersModule } from 'src/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { NotificationModule } from 'src/notification/notif.module';
 
 @Module({
   //JwtModule.register({}) may not be set right
@@ -18,6 +19,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
       inject: [ConfigService],
     }),
+    NotificationModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

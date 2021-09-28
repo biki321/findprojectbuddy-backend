@@ -1,11 +1,13 @@
 import { Controller, Get, HttpStatus, Req, Param, Res } from '@nestjs/common';
 import { ViewerToProjectService } from './viewerToProject.service';
 import { Request, Response } from 'express';
+import { NotificationService } from 'src/notification/notif.service';
 
 @Controller('api/v1/feed')
 export class ViewerToProjectController {
   constructor(
     private readonly viewerToProjectService: ViewerToProjectService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   @Get()
@@ -46,12 +48,15 @@ export class ViewerToProjectController {
       projectId,
       'liked',
     );
-    if (res)
+    if (res) {
+      //also update into the "ReqGotNotif" table
+      await this.notificationService.updateReqGot(res.projectOwnerId);
+
       return {
         statusCode: HttpStatus.OK,
         message: 'updated',
       };
-    else {
+    } else {
       response.status(HttpStatus.NOT_FOUND);
       return {
         statusCode: HttpStatus.NOT_FOUND,
