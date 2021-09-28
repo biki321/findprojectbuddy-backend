@@ -53,7 +53,7 @@ import { ReqAcceptedNotif } from './notification/reqAcceptedNotif.entity';
           ReqGotNotif,
           ReqAcceptedNotif,
         ],
-        synchronize: true, //this should be false in production
+        synchronize: false, //this should be false in production
       }),
       inject: [ConfigService],
     }),
