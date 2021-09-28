@@ -43,6 +43,7 @@ import { ReqAcceptedNotif } from './notification/reqAcceptedNotif.entity';
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE'),
+
         entities: [
           User,
           Project,
@@ -53,8 +54,11 @@ import { ReqAcceptedNotif } from './notification/reqAcceptedNotif.entity';
           ReqGotNotif,
           ReqAcceptedNotif,
         ],
-        synchronize: true, //this should be false in production
-        ssl: true,
+        synchronize: false, //this should be false in production
+        ssl:
+          process.env.NODE_ENV === 'production'
+            ? { rejectUnauthorized: false }
+            : false,
       }),
       inject: [ConfigService],
     }),
