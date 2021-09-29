@@ -12,10 +12,12 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { MessageDto } from './message.dto';
 import { ChatService } from 'src/chat/chat.service';
+import { ConfigService } from '@nestjs/config';
 
+console.log('process.env.CORS_ORIGIN', process.env.CORS_ORIGIN);
 @WebSocketGateway({
   cors: {
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000', 'https://findprojectbuddy.netlify.app'],
     credentials: true,
     exposedHeaders: ['Authorization'],
     // exposedHeaders: '*',
@@ -28,6 +30,7 @@ export class SocketEventsGateway
   constructor(
     private readonly jwtService: JwtService,
     private readonly chatService: ChatService,
+    private readonly configService: ConfigService,
   ) {}
 
   @WebSocketServer()
