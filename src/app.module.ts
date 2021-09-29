@@ -54,7 +54,7 @@ import { ReqAcceptedNotif } from './notification/reqAcceptedNotif.entity';
           ReqGotNotif,
           ReqAcceptedNotif,
         ],
-        synchronize: false, //this should be false in production
+        synchronize: true, //this should be false in production
         ssl: true,
         extra: {
           ssl: {
