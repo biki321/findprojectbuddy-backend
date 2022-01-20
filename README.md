@@ -1,3 +1,4 @@
+
 #### FindProjectBuddy
 
 check [live](https://findprojectbuddy.netlify.app/)
@@ -15,3 +16,9 @@ once you like a project in your feed and the owner accept that request , you two
 
 This backend uses nest.js as a backend framework , postgresql database and typeorm orm.
 [here](https://github.com/biki321/findprojectbuddy-frontend) is the frontend code in react
+
+**Tech stack:**
+
+ - [Nestjs](https://nestjs.com/)
+ - [Postgresql](https://www.postgresql.org/)
+ - [Typeorm](https://typeorm.io/)
